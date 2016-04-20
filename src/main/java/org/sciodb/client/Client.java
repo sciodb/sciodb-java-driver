@@ -45,6 +45,15 @@ public class Client {
                         client.write(buffer);
                         buffer.clear();
 
+                        final ByteBuffer response = ByteBuffer.allocate(1024);
+
+                        int currentSize = client.read(response);
+                        byte [] data = new byte[currentSize];
+                        System.arraycopy(response.array(), 0, data, 0, currentSize);
+
+                        final String str = new String(data);
+                        logger.debug("Got: " + str);
+
 //                        logger.info("Message sent! ");
                     } catch (IOException e) {
                         e.printStackTrace();
