@@ -1,13 +1,16 @@
 package org.sciodb.client;
 
 import org.apache.log4j.Logger;
-import org.sciodb.utils.CommandEncoder;
-import org.sciodb.utils.models.StatusCommand;
+import org.sciodb.messages.Operations;
+import org.sciodb.messages.impl.ContainerMessage;
+import org.sciodb.messages.impl.EchoMessage;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.UUID;
 
 /**
  * @author jesus.navarrete  (26/02/16)
@@ -16,14 +19,12 @@ public class Client {
 
     final static private Logger logger = Logger.getLogger(Client.class);
 
-    final static String sms = "{ method : '//echo'}";
-
     public static void main(String[] args) throws IOException {
-        final InetSocketAddress hostAddress = new InetSocketAddress("localhost", 9090);
+        final InetSocketAddress hostAddress = new InetSocketAddress(Inet4Address.getLocalHost().getHostAddress(), 9090);
 
         long init = System.currentTimeMillis();
 
-        int total = 100;
+        int total = 100000;
         final SocketChannel client = SocketChannel.open(hostAddress);
         for (int i = 0; i < total; i++) {
 
@@ -33,16 +34,15 @@ public class Client {
                     super.start();
                     try {
 
-//                        logger.info("Client... started");
+                        final byte[] message = createMessage(this.getName());
 
-                        final StatusCommand status = createCommand(this.getName());
-
-                        final byte [] message = CommandEncoder.encode(status).getBytes();
                         final ByteBuffer buffer = ByteBuffer.wrap(message);
                         final String headerSize = String.format("%04d", message.length);
                         final ByteBuffer header = ByteBuffer.wrap(headerSize.getBytes());
+
                         client.write(header);
                         client.write(buffer);
+
                         buffer.clear();
 
                         final ByteBuffer response = ByteBuffer.allocate(1024);
@@ -52,9 +52,8 @@ public class Client {
                         System.arraycopy(response.array(), 0, data, 0, currentSize);
 
                         final String str = new String(data);
-                        logger.debug("Got: " + str);
+                        logger.debug("("+ this.getName() + ") Got: " + str);
 
-//                        logger.info("Message sent! ");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -110,18 +109,16 @@ public class Client {
         logger.info(threadName + " sent " + counter + " messages.");
     }
 
-    private static StatusCommand createCommand(final String id) {
-//        try {
-//            String id = Inet4Address.getLocalHost().getHostAddress() + System.currentTimeMillis();
+    private static byte[] createMessage(final String name) {
+        final EchoMessage echo = new EchoMessage();
+        echo.setMsg("Echo message - " + name);
 
-            final StatusCommand status = new StatusCommand();
-            status.setOperationID("status");
-            status.setMessageID(id);
-            return status;
-//        } catch (UnknownHostException e) {
-//            e.printStackTrace();
-//        }
-//            return null;
+        final ContainerMessage container = new ContainerMessage();
+        container.getHeader().setId(UUID.randomUUID().toString());
+        container.getHeader().setOperationId(Operations.ECHO.getValue());
+
+        container.setContent(echo.encode());
+
+        return container.encode();
     }
-
 }
