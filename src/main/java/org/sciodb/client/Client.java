@@ -114,7 +114,7 @@ public class Client {
 
         final ContainerMessage container = new ContainerMessage();
         container.getHeader().setId(UUID.randomUUID().toString());
-        container.getHeader().setOperationId(Operations.ECHO.getValue());
+        container.getHeader().setOperationId(Operations.PING.getValue());
 
         container.setContent(echo.encode());
 
