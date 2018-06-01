@@ -24,7 +24,7 @@ public class Client {
 
         long init = System.currentTimeMillis();
 
-        int total = 100000;
+        int total = 10;
         final SocketChannel client = SocketChannel.open(hostAddress);
         for (int i = 0; i < total; i++) {
 
@@ -33,7 +33,6 @@ public class Client {
                 public synchronized void start() {
                     super.start();
                     try {
-//                        final SocketChannel client = SocketChannel.open(hostAddress);
                         final byte[] message = createMessage(this.getName());
 
                         final ByteBuffer buffer = ByteBuffer.wrap(message);
@@ -53,7 +52,6 @@ public class Client {
 
                         final String str = new String(data);
                         logger.debug("("+ this.getName() + ") Got: " + str);
-//                        client.close();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -116,7 +114,7 @@ public class Client {
 
         final ContainerMessage container = new ContainerMessage();
         container.getHeader().setId(UUID.randomUUID().toString());
-        container.getHeader().setOperationId(Operations.ECHO.getValue());
+        container.getHeader().setOperationId(Operations.PING.getValue());
 
         container.setContent(echo.encode());
 
