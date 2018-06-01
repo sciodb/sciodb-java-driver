@@ -1,6 +1,6 @@
 package org.sciodb.client;
 
-import org.sciodb.rox.ChangeRequest;
+import org.sciodb.server.ChangeRequest;
 
 import java.io.IOException;
 import java.net.InetAddress;
